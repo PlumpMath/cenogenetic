@@ -1,0 +1,6 @@
+*
+!.gitignore
+!runtests.sh
+!*.cc
+!*.h
+
