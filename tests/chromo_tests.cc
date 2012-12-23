@@ -58,13 +58,13 @@ int main(int argc, char**) {
 		allele_t::build(back_inserter(als), CREATE_FULL, i);
 		std::cout << "Depth: " << i << "\nFULL:\n\n";
 		std::cout << sexp << als << std::endl << std::endl;
-		//std::cout << "evals to "<< allele_t::eval(als.begin()) << std::endl;
+		std::cout << "evals to "<< allele_t::eval(als.begin()) << std::endl;
 		std::cout << postfix << als << std::endl << std::endl;
 		als.clear();
 		allele_t::build(back_inserter(als), CREATE_GROW, i);
 		std::cout << "\nGROW:\n\n";
 		std::cout << sexp << als << std::endl << std::endl;
-		//sta::cout << "evals to "<< allele_t::eval(als.begin()) << std::endl;
+		std::cout << "evals to "<< allele_t::eval(als.begin()) << std::endl;
 		std::cout << postfix << als << std::endl << std::endl;
 	}
 }

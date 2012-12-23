@@ -45,13 +45,15 @@ template <class T, class U = unsigned char> struct Allele {
 					return ntides->terms[iter->index()];
 				else {
 					argstack.top().push_back(ntides->terms[iter->index()]);
-					while (!argstack.empty() &&
-							argstack.top().size() == ntides->funcs[funcstack.top().index()]->arity()) {
-						argstack.pop();
+					for (auto &a : argstack.top()) {
+					}
+					while ( argstack.top().size() == ntides->funcs[funcstack.top().index()]->arity()) {
+						term_t t = ntides->funcs[funcstack.top().index()]->eval(argstack.top());
 						funcstack.pop();
+						argstack.pop();
 						if (argstack.empty())
-							return ntides->funcs[funcstack.top().index()]->eval(argstack.top());
-						argstack.top().push_back(ntides->funcs[funcstack.top().index()]->eval(argstack.top()));
+							return t;
+						argstack.top().push_back(t);
 					}
 				}
 			} else {

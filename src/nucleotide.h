@@ -61,7 +61,7 @@ template <size_t N, class T> struct Function : public ClosedFunction<T> {
 	f_t f;
 	Function(const f_t& ft = f_t {}) : f(ft) {}
 	constexpr size_t arity() const { return N;}
-	term_t eval(const terms_t& t) const { return typename BinderBuilder<N>::binder()(f_t(), t)(); }
+	term_t eval(const terms_t& t) const { return typename BinderBuilder<N>::binder()(f, t)(); }
 };
 
 template <class T> using unary_func      = Function<1, T>;
