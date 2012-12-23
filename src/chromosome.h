@@ -99,19 +99,29 @@ operator<<(std::basic_ostream<charT, traits>& s, const ceno::Allele<T>& al) {
 template <class charT, class traits, class T, class U> inline std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& s, const std::vector<ceno::Allele<T, U>>& als) {
 	std::stack<size_t> argstack;
-for (const auto al : als) {
-		if (!argstack.empty()) //no args on first pass
-			s << ' ';
+	std::stack<Allele<T,U>> funcstack;
+	bool postfix = s.flags() & std::ios_base::right;
+	for (const auto al : als) {
 		if (al.is_func()) {
-			s << '(';
 			argstack.push(al.ntides->funcs[al.index()]->arity());
+			if (!postfix && !argstack.empty()) //no args on first pass
+				s << ' ';
+			if (postfix)
+				funcstack.push(al);
+			else
+				s << '(' << al;
 		}
-		s << al;
-		if (al.is_term())
+		if (al.is_term()) {
+			s << ' ' << al;
 			while (!argstack.empty() && --argstack.top() == 0) {
 				argstack.pop();
-				s << ')';
+				if (postfix) {
+					s << ' ' << funcstack.top();
+					funcstack.pop();
+				}else
+					s << ')';
 			}
+		}
 	}
 	assert(argstack.empty());
 	return s;
