@@ -31,7 +31,7 @@ template <class T, class U = unsigned char> struct Allele {
 	Allele& operator=(const Allele& s) {component = s.component;}
 	Allele& operator=(Allele && s) {component = std::move(s.component);}
 	Allele& operator=(const U& u) {component = u;}
-	Allele& operator=(U&& u) {component = std::move(u);}
+	Allele& operator=(U && u) {component = std::move(u);}
 	bool is_term() const { return component & TERMINAL;}
 	bool is_func() const { return !is_term();}
 	U index() const { return component & ~TERMINAL;}
@@ -83,7 +83,7 @@ template <class T, class U = unsigned char> struct Allele {
 	}
 };
 
-template <class T, class U = unsigned char> using Chromosome = std::vector<Allele<T,U>>;
+template <class T, class U = unsigned char> using Chromosome = std::vector<Allele<T, U>>;
 
 template <class charT, class traits, class T> inline std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& s, const ceno::Allele<T>& al) {
@@ -97,7 +97,7 @@ operator<<(std::basic_ostream<charT, traits>& s, const ceno::Allele<T>& al) {
 }
 
 template <class charT, class traits, class T, class U> inline std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& s, const std::vector<ceno::Allele<T,U>>& als) {
+operator<<(std::basic_ostream<charT, traits>& s, const std::vector<ceno::Allele<T, U>>& als) {
 	std::stack<size_t> argstack;
 for (const auto al : als) {
 		if (!argstack.empty()) //no args on first pass

@@ -52,16 +52,16 @@ template <class T, class... Ts> constexpr size_t arity(const std::function<T(Ts.
 template <class T> struct ClosedFunction {
 	CENOTYPES(T);
 	virtual size_t arity() const = 0;
-	virtual term_t eval(const terms_t &) const = 0;
+	virtual term_t eval(const terms_t&) const = 0;
 };
 
 template <size_t N, class T> struct Function : public ClosedFunction<T> {
 	CENOTYPES(T);
 	using f_t = typename FuncBuilder<N, T>::type;
 	f_t f;
-	Function(const f_t& ft = f_t{}) : f(ft) {}
+	Function(const f_t& ft = f_t {}) : f(ft) {}
 	constexpr size_t arity() const { return N;}
-	term_t eval(const terms_t &t) const { return typename BinderBuilder<N>::binder()(f_t(),t)(); }
+	term_t eval(const terms_t& t) const { return typename BinderBuilder<N>::binder()(f_t(), t)(); }
 };
 
 template <class T> using unary_func      = Function<1, T>;
