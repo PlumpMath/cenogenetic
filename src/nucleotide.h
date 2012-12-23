@@ -1,13 +1,15 @@
 #ifndef CENO_FUNC_H
 #define CENO_FUNC_H
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
-#define CENOTYPES(F) \
-	using func_t = F; \
-	using funcs_t = std::vector<func_t>; \
-	using term_t = typename func_t::result_type; \
+#define CENOTYPES(T) \
+	using func_t = ClosedFunction<T>; \
+	using func_ptr_t = std::unique_ptr<func_t>; \
+	using funcs_t = std::vector<func_ptr_t>; \
+	using term_t = T; \
 	using terms_t = std::vector<term_t>; \
 	using names_t = std::vector<std::string>;
 
@@ -39,6 +41,7 @@ template <size_t Y, size_t... Inds> struct BinderBuilder<0, Y, Inds...> {
 
 template <size_t N, class T, class... Ts> struct FuncBuilder {
 	using type = typename FuncBuilder < N - 1, T, T, Ts... >::type;
+	static const size_t arity = N;
 };
 template <class T, class... Ts> struct FuncBuilder<0, T, Ts...> {
 	using type = std::function<T(Ts...)>;
@@ -46,14 +49,29 @@ template <class T, class... Ts> struct FuncBuilder<0, T, Ts...> {
 
 template <class T, class... Ts> constexpr size_t arity(const std::function<T(Ts...)>&) { return sizeof...(Ts);}
 
-template <class T> using unary_func      = typename FuncBuilder<1, T>::type;
-template <class T> using binary_func     = typename FuncBuilder<2, T>::type;
-template <class T> using ternary_func    = typename FuncBuilder<3, T>::type;
-template <class T> using quaternary_func = typename FuncBuilder<4, T>::type;
-template <class T> using quinary_func    = typename FuncBuilder<5, T>::type;
+template <class T> struct ClosedFunction {
+	CENOTYPES(T);
+	virtual size_t arity() const = 0;
+	virtual term_t eval(const terms_t &) const = 0;
+};
 
-template <class F> struct Nucleotides {
-	CENOTYPES(F);
+template <size_t N, class T> struct Function : public ClosedFunction<T> {
+	CENOTYPES(T);
+	using f_t = typename FuncBuilder<N, T>::type;
+	f_t f;
+	Function(const f_t& ft = f_t{}) : f(ft) {}
+	constexpr size_t arity() const { return N;}
+	term_t eval(const terms_t &t) const { return typename BinderBuilder<N>::binder()(f_t(),t)(); }
+};
+
+template <class T> using unary_func      = Function<1, T>;
+template <class T> using binary_func     = Function<2, T>;
+template <class T> using ternary_func    = Function<3, T>;
+template <class T> using quaternary_func = Function<4, T>;
+template <class T> using quinary_func    = Function<5, T>;
+
+template <class T> struct Nucleotides {
+	CENOTYPES(T);
 
 	funcs_t funcs;
 	terms_t terms;

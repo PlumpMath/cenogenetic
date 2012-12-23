@@ -11,37 +11,53 @@
 
 namespace ceno {
 
-template <class F, class T = unsigned char> struct Allele {
-	CENOTYPES(F);
-	using snodes_t = std::vector<Allele>;
+template <class T, class U = unsigned char> struct Allele {
+	CENOTYPES(T);
+	using chromosome_t = std::vector<Allele>;
 
-	static const T TERMINAL = 1 << (std::numeric_limits<T>::digits - 1);
-	static const T FUNCTION = 0;
-	static Nucleotides<func_t> *ntides;
+	static const U TERMINAL = 1 << (std::numeric_limits<U>::digits - 1);
+	static const U FUNCTION = 0;
+	static Nucleotides<T> *ntides;
 
-	T component;
+	U component;
 	terms_t terms;
-	Allele(): component(~0) {}
+	Allele(): component(~0) {
+		static_assert(std::numeric_limits<U>::is_integer && !std::numeric_limits<U>::is_signed,
+			      "Index type must be unsigned");
+	}
 	Allele(const Allele& s): component(s.component) {}
 	Allele(Allele && s): component(std::move(s.component)) {}
-	Allele(const T& t): component(t) {}
+	Allele(const U& u): component(u) {}
 	Allele& operator=(const Allele& s) {component = s.component;}
 	Allele& operator=(Allele && s) {component = std::move(s.component);}
-	Allele& operator=(const T& t) {component = t;}
-	Allele& operator=(T && t) {component = std::move(t);}
+	Allele& operator=(const U& u) {component = u;}
+	Allele& operator=(U&& u) {component = std::move(u);}
 	bool is_term() const { return component & TERMINAL;}
 	bool is_func() const { return !is_term();}
-	T index() const { return component & ~TERMINAL;}
+	U index() const { return component & ~TERMINAL;}
 
-	term_t eval(typename snodes_t::iterator iter) const {
-		if (is_term())
-			return ntides->terminals[index()];
-		std::array<term_t, arity(func_t())> args;
-		for (int i = 0; i < args.size(); ++i)
-			args[i] = eval(++iter);
-		typename BinderBuilder<args.size()>::binder b;
-		auto bound = b(ntides->functions[index()], args);
-		return bound();
+	static term_t eval(typename chromosome_t::iterator iter) {
+		std::stack<terms_t> argstack;
+		std::stack<Allele> funcstack;
+		for (; true; ++iter)
+			if (iter->is_term()) {
+				if (argstack.empty())
+					return ntides->terms[iter->index()];
+				else {
+					argstack.top().push_back(ntides->terms[iter->index()]);
+					while (!argstack.empty() &&
+							argstack.top().size() == ntides->funcs[funcstack.top().index()]->arity()) {
+						argstack.pop();
+						funcstack.pop();
+						if (argstack.empty())
+							return ntides->funcs[funcstack.top().index()]->eval(argstack.top());
+						argstack.top().push_back(ntides->funcs[funcstack.top().index()]->eval(argstack.top()));
+					}
+				}
+			} else {
+				funcstack.push(*iter);
+				argstack.push(terms_t());
+			}
 	}
 
 	template <class Iter>
@@ -54,26 +70,23 @@ template <class F, class T = unsigned char> struct Allele {
 		size_t bound = ((p & CreationPolicy::TERMS) ? ntides->terms.size() : 0)
 			       + ((p & CreationPolicy::FUNCS) ? ntides->funcs.size() : 0);
 		auto r = bounded_rand(bound);
-		//std::cerr << "bound == " << bound << " r == " << r << std::endl;
 		if (p & CreationPolicy::TERMS)
 			if (r < ntides->terms.size()) {
-				*iter = (T)(TERMINAL | r);
-				//std::cerr << "term == " << (TERMINAL | r) << std::endl;
+				*iter = (U)(TERMINAL | r);
 				++iter;
 				return;
 			} else
 				r -= ntides->terms.size();
-		*iter = (T)(FUNCTION | r);
-		//std::cerr << "func == " << (FUNCTION | r) << std::endl;
-		for (size_t i = 0; i < arity(func_t()); ++i)
+		*iter = (U)(FUNCTION | r);
+		for (size_t i = 0; i < ntides->funcs[r]->arity(); ++i)
 			build(++iter, policy, max_depth, depth + 1);
 	}
 };
 
-template <class T> using Chromosome = std::vector<Allele<T>>;
+template <class T, class U = unsigned char> using Chromosome = std::vector<Allele<T,U>>;
 
-template <class charT, class traits, class F> inline std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& s, const ceno::Allele<F>& al) {
+template <class charT, class traits, class T> inline std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& s, const ceno::Allele<T>& al) {
 	if (al.is_func())
 		s << (al.index() < al.ntides->func_names.size() ? al.ntides->func_names[al.index()] : "[undefined]");
 	else if (al.index() < al.ntides->term_names.size())
@@ -83,15 +96,15 @@ operator<<(std::basic_ostream<charT, traits>& s, const ceno::Allele<F>& al) {
 	return s;
 }
 
-template <class charT, class traits, class F> inline std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& s, const std::vector<ceno::Allele<F>>& als) {
+template <class charT, class traits, class T, class U> inline std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& s, const std::vector<ceno::Allele<T,U>>& als) {
 	std::stack<size_t> argstack;
 for (const auto al : als) {
 		if (!argstack.empty()) //no args on first pass
 			s << ' ';
 		if (al.is_func()) {
 			s << '(';
-			argstack.push(arity(F()));
+			argstack.push(al.ntides->funcs[al.index()]->arity());
 		}
 		s << al;
 		if (al.is_term())
