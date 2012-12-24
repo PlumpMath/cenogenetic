@@ -1,5 +1,6 @@
 #ifndef CENO_allele_H
 #define CENO_allele_H
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <limits>
@@ -86,6 +87,46 @@ template <class T, class U = unsigned char> struct Allele {
 };
 
 template <class T, class U = unsigned char> using Chromosome = std::vector<Allele<T, U>>;
+
+template <class Iter> Iter extract(Iter iter) {
+	std::stack<size_t> argstack;
+	if (iter->is_term())
+		return ++iter;
+	for (; true; ++iter ){
+		if (iter->is_func())
+			argstack.push(iter->ntides->funcs[iter->index()]->arity());
+		if (iter->is_term())
+			while (!argstack.empty() && --argstack.top() == 0)
+				argstack.pop();
+		if (argstack.empty())
+			return ++iter;
+	}
+}
+
+template <class T, class U> 
+auto random_allele(const Chromosome<T,U> & c, float functionweight) -> decltype(c.begin()){
+	bool isfunc = bounded_rand(10000) < functionweight * 10000;
+	auto pred = isfunc ? std::mem_fn(&Allele<T,U>::is_func) : std::mem_fn(&Allele<T,U>::is_term);
+	size_t lucky = bounded_rand(std::count_if(c.begin(),c.end(),pred));
+	auto iter = c.begin();
+	for (size_t i{}; i < lucky; ++i )
+		iter = find_if(iter,c.end(),pred);
+	return iter;
+}
+
+template <class T, class U, class Out>
+void breed(const Chromosome<T,U> &xx, const Chromosome<T,U> &xy, Out jr, Out sis, float functionweight = .8){
+	auto fromdad = random_allele(xy,functionweight);
+	auto enddad = extract(fromdad);
+	auto frommom = random_allele(xx,functionweight);
+	auto endmom = extract(frommom);
+	std::copy(xy.begin(),fromdad,jr);
+	std::copy(frommom,endmom,jr);
+	std::copy(enddad,xy.end(),jr);
+	std::copy(xx.begin(),frommom,sis);
+	std::copy(fromdad,enddad,sis);
+	std::copy(endmom,xx.end(),sis);
+}
 
 template <class charT, class traits, class T> inline std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& s, const ceno::Allele<T>& al) {

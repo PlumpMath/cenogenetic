@@ -1,5 +1,3 @@
-#include <fstream>
-
 #include "chromosome.h"
 
 namespace ceno {
@@ -52,19 +50,22 @@ int main(int argc, char**) {
 	g.func_names.push_back("min");
 	g.func_names.push_back("middle");
 	g.func_names.push_back("square");
-	Chromosome<double> als;
+	Chromosome<double> algrow,alfull;
 	for (int i = 1; i < 5; i++) {
-		als.clear();
-		allele_t::build(back_inserter(als), CREATE_FULL, i);
+		alfull.clear();
+		allele_t::build(back_inserter(alfull), CREATE_FULL, i);
 		std::cout << "Depth: " << i << "\nFULL:\n\n";
-		std::cout << sexp << als << std::endl << std::endl;
-		std::cout << "evals to "<< allele_t::eval(als.begin()) << std::endl;
-		std::cout << postfix << als << std::endl << std::endl;
-		als.clear();
-		allele_t::build(back_inserter(als), CREATE_GROW, i);
+		std::cout << sexp << alfull << std::endl << std::endl;
+		std::cout << postfix << alfull << std::endl << std::endl;
+		std::cout << "evals to "<< allele_t::eval(alfull.begin()) << std::endl;
+		algrow.clear();
+		allele_t::build(back_inserter(algrow), CREATE_GROW, i);
 		std::cout << "\nGROW:\n\n";
-		std::cout << sexp << als << std::endl << std::endl;
-		std::cout << "evals to "<< allele_t::eval(als.begin()) << std::endl;
-		std::cout << postfix << als << std::endl << std::endl;
+		std::cout << sexp << algrow << std::endl << std::endl;
+		std::cout << postfix << algrow << std::endl << std::endl;
+		std::cout << "evals to "<< allele_t::eval(algrow.begin()) << std::endl;
+		Chromosome<double> jr,sis;
+		breed(alfull,algrow,std::back_inserter(jr),std::back_inserter(sis),.5);
+		std::cout << sexp << "OFFSPRING: " << jr << std::endl << sis << std::endl;
 	}
 }
