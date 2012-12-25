@@ -20,9 +20,9 @@ template <class T, class U = unsigned char> struct Allele {
 	static const U FUNCTION = 0;
 	static Nucleotides<T> *ntides;
 
-	U component;
+	U component = ~0;
 	terms_t terms;
-	Allele(): component(~0) {
+	Allele() {
 		static_assert(std::numeric_limits<U>::is_integer && !std::numeric_limits<U>::is_signed,
 			      "Index type must be unsigned");
 	}
@@ -105,8 +105,7 @@ template <class Iter> Iter extract(Iter iter) {
 
 template <class T, class U> 
 auto random_allele(const Chromosome<T,U> & c, float functionweight) -> decltype(c.begin()){
-	bool isfunc = bounded_rand(10000) < functionweight * 10000;
-	auto pred = isfunc ? std::mem_fn(&Allele<T,U>::is_func) : std::mem_fn(&Allele<T,U>::is_term);
+	auto pred = bounded_rand(10000) < functionweight * 10000 ? std::mem_fn(&Allele<T,U>::is_func) : std::mem_fn(&Allele<T,U>::is_term);
 	size_t lucky = bounded_rand(std::count_if(c.begin(),c.end(),pred));
 	auto iter = c.begin();
 	for (size_t i{}; i < lucky; ++i )
