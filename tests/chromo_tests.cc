@@ -50,22 +50,22 @@ int main(int argc, char**) {
 	g.func_names.push_back("min");
 	g.func_names.push_back("middle");
 	g.func_names.push_back("square");
-	Chromosome<double> algrow,alfull;
+	Genome<double> cgrow, cfull;
 	for (int i = 1; i < 5; i++) {
-		alfull.clear();
-		allele_t::build(back_inserter(alfull), CREATE_FULL, i);
+		cfull.clear();
+		allele_t::build(back_inserter(cfull), CREATE_FULL, i);
 		std::cout << "Depth: " << i << "\nFULL:\n\n";
-		std::cout << sexp << alfull << std::endl << std::endl;
-		std::cout << postfix << alfull << std::endl << std::endl;
-		std::cout << "evals to "<< allele_t::eval(alfull.begin()) << std::endl;
-		algrow.clear();
-		allele_t::build(back_inserter(algrow), CREATE_GROW, i);
+		std::cout << sexp << cfull << std::endl << std::endl;
+		std::cout << postfix << cfull << std::endl << std::endl;
+		std::cout << "evals to " << allele_t::eval(cfull.begin()) << std::endl;
+		cgrow.clear();
+		allele_t::build(back_inserter(cgrow), CREATE_GROW, i);
 		std::cout << "\nGROW:\n\n";
-		std::cout << sexp << algrow << std::endl << std::endl;
-		std::cout << postfix << algrow << std::endl << std::endl;
-		std::cout << "evals to "<< allele_t::eval(algrow.begin()) << std::endl;
-		Chromosome<double> jr,sis;
-		breed(alfull,algrow,std::back_inserter(jr),std::back_inserter(sis),.5);
+		std::cout << sexp << cgrow << std::endl << std::endl;
+		std::cout << postfix << cgrow << std::endl << std::endl;
+		std::cout << "evals to " << allele_t::eval(cgrow.begin()) << std::endl;
+		Genome<double> jr, sis;
+		breed(cfull, cgrow, std::back_inserter(jr), std::back_inserter(sis), .5);
 		std::cout << sexp << "OFFSPRING: " << jr << std::endl << sis << std::endl;
 	}
 }
