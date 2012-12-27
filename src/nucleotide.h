@@ -53,6 +53,7 @@ template <class T> struct ClosedFunction {
 	CENOTYPES(T);
 	virtual size_t arity() const = 0;
 	virtual term_t eval(const terms_t&) const = 0;
+	virtual ~ClosedFunction() = default;
 };
 
 template <size_t N, class T> struct Function : public ClosedFunction<T> {
@@ -72,7 +73,6 @@ template <class T> using quinary_func    = Function<5, T>;
 
 template <class T> struct Nucleotides {
 	CENOTYPES(T);
-
 	funcs_t funcs;
 	terms_t terms;
 	names_t func_names, term_names;
