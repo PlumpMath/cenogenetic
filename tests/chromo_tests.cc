@@ -1,13 +1,16 @@
 #include "chromosome.h"
 
 namespace ceno {
-using ufunc = unary_func<double>;
-using bfunc = binary_func<double>;
-using tfunc = ternary_func<double>;
-using f_t  = typename tfunc::f_t;
-using ntides_t = Nucleotides<double>;
-using allele_t = Allele<double>;
-
+using T = double;
+using U = unsigned char;
+using ufunc = unary_func<T>;
+using bfunc = binary_func<T>;
+using tfunc = ternary_func<T>;
+//using f_t  = typename tfunc::f_t;
+using ntides_t = Nucleotides<T>;
+using allele_t = Allele<T, U>;
+using chromosome_t = Chromosome<T, U>;
+using genome_t = Genome<T, U>;
 ntides_t g;
 template<> ntides_t* allele_t::ntides = &g;
 
@@ -22,25 +25,25 @@ int main(int argc, char**) {
 	}
 	g.term_names = {"x", "y", "z"};
 	g.terms = { 2., 4.5, 7.6, .34 };
-	g.funcs.push_back(std::unique_ptr<bfunc>(new bfunc([](double a, double b) {
+	g.funcs.push_back(std::unique_ptr<bfunc>(new bfunc([](T a, T b) {
 		return a * b;
 	})));
-	g.funcs.push_back(std::unique_ptr<tfunc>(new tfunc([](double a, double b, double c) {
+	g.funcs.push_back(std::unique_ptr<tfunc>(new tfunc([](T a, T b, T c) {
 		return a + b + c;
 	})));
-	g.funcs.push_back(std::unique_ptr<bfunc>(new bfunc([](double a, double b) {
+	g.funcs.push_back(std::unique_ptr<bfunc>(new bfunc([](T a, T b) {
 		return a - b;
 	})));
-	g.funcs.push_back(std::unique_ptr<tfunc>(new tfunc([](double a, double b, double c) {
+	g.funcs.push_back(std::unique_ptr<tfunc>(new tfunc([](T a, T b, T c) {
 	return a > b ? a > c ? a : c : b > c ? b : c;
 	})));
-	g.funcs.push_back(std::unique_ptr<tfunc>(new tfunc([](double a, double b, double c) {
+	g.funcs.push_back(std::unique_ptr<tfunc>(new tfunc([](T a, T b, T c) {
 	return a < b ? a < c ? a : c : b < c ? b : c;
 	})));
-	g.funcs.push_back(std::unique_ptr<tfunc>(new tfunc([](double a, double b, double c) {
+	g.funcs.push_back(std::unique_ptr<tfunc>(new tfunc([](T a, T b, T c) {
 	return a > b ? a < c ? a : b < c ? b : c : a > c ? c : a;
 	})));
-	g.funcs.push_back(std::unique_ptr<ufunc>(new ufunc([](double a) {
+	g.funcs.push_back(std::unique_ptr<ufunc>(new ufunc([](T a) {
 		return a * a;
 	})));
 	g.func_names.push_back("mult");
@@ -50,22 +53,22 @@ int main(int argc, char**) {
 	g.func_names.push_back("min");
 	g.func_names.push_back("middle");
 	g.func_names.push_back("square");
-	Genome<double> cgrow, cfull;
+	genome_t grow, full;
 	for (int i = 1; i < 5; i++) {
-		cfull.clear();
-		allele_t::build(back_inserter(cfull), CREATE_FULL, i);
+		full.clear();
+		allele_t::build(back_inserter(full), CREATE_FULL, i);
 		std::cout << "Depth: " << i << "\nFULL:\n\n";
-		std::cout << sexp << cfull << std::endl << std::endl;
-		std::cout << postfix << cfull << std::endl << std::endl;
-		std::cout << "evals to " << allele_t::eval(cfull.begin()) << std::endl;
-		cgrow.clear();
-		allele_t::build(back_inserter(cgrow), CREATE_GROW, i);
+		std::cout << sexp << full << std::endl << std::endl;
+		std::cout << postfix << full << std::endl << std::endl;
+		std::cout << "evals to " << allele_t::eval(full.begin()) << std::endl;
+		grow.clear();
+		allele_t::build(back_inserter(grow), CREATE_GROW, i);
 		std::cout << "\nGROW:\n\n";
-		std::cout << sexp << cgrow << std::endl << std::endl;
-		std::cout << postfix << cgrow << std::endl << std::endl;
-		std::cout << "evals to " << allele_t::eval(cgrow.begin()) << std::endl;
-		Genome<double> jr, sis;
-		breed(cfull, cgrow, std::back_inserter(jr), std::back_inserter(sis), .5);
+		std::cout << sexp << grow << std::endl << std::endl;
+		std::cout << postfix << grow << std::endl << std::endl;
+		std::cout << "evals to " << allele_t::eval(grow.begin()) << std::endl;
+		genome_t jr, sis;
+		breed(full, grow, std::back_inserter(jr), std::back_inserter(sis), .5);
 		std::cout << sexp << "OFFSPRING: " << jr << std::endl << sis << std::endl;
 	}
 }
