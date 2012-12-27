@@ -12,9 +12,7 @@
 
 namespace ceno {
 
-enum {BEGIN,END};
-
-template <class T, class U = unsigned char> struct Allele {
+template <class T, class U = unsigned char> class Allele {
 	CENOTYPES(T);
 	using genome_t = std::vector<Allele>;
 	using locus_t = typename genome_t::const_iterator;
@@ -22,10 +20,9 @@ template <class T, class U = unsigned char> struct Allele {
 
 	static const U TERMINAL = 1 << (std::numeric_limits<U>::digits - 1);
 	static const U FUNCTION = 0;
-	static Nucleotides<T> *ntides;
-
 	U component = ~0;
-	terms_t terms;
+	public:
+	static Nucleotides<T> *ntides;
 	Allele() {
 		static_assert(std::numeric_limits<U>::is_integer && !std::numeric_limits<U>::is_signed,
 			      "Index type must be unsigned");
@@ -118,8 +115,8 @@ template <class T, class U = unsigned char> struct Allele {
 
 };
 
-template <class T, class U = unsigned char> using Genome = std::vector<Allele<T, U>>;
-template <class T, class U = unsigned char> using Locus = typename Genome<T, U>::const_iterator;
+template <class T, class U> using Genome = std::vector<Allele<T, U>>;
+template <class T, class U> using Locus = typename Genome<T, U>::const_iterator;
 
 template <class T, class U>  class Chromosome {
 	using allele_t = Allele<T,U>;
@@ -132,6 +129,7 @@ template <class T, class U>  class Chromosome {
 	Chromosome& operator=(const genome_t& g) { b = g.begin(); e = g.end(); }
 	const locus_t& begin() const { return b; }
 	const locus_t& end() const { return e; }
+	size_t size() const { return e - b; }
 	static Chromosome random(const Chromosome &c, float functionweight){
 		return Chromosome(allele_t::random(c.begin(),c.end(),bounded_rand(10000) < functionweight * 10000));
 	}
@@ -139,7 +137,7 @@ template <class T, class U>  class Chromosome {
 
 template <class T, class U, class Out>
 void breed(const Genome<T,U> &xx, const Genome<T,U> &xy, Out jr, Out sis, float functionweight = .8){
-	auto fromdad = Chromosome<T,U>::random(Chromosome<T,U>(xy),functionweight);
+	auto fromdad = Chromosome<T,U>::random(xy,functionweight);
 	auto frommom = Chromosome<T,U>::random(xx,functionweight);
 	std::copy(xy.begin(),fromdad.begin(),jr);
 	std::copy(frommom.begin(),frommom.end(),jr);
