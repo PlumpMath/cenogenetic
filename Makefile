@@ -63,11 +63,12 @@ install: all
 
 .PHONY: pretty
 pretty:
-	if astyle --version 2>/dev/null ; then astyle --options=./astylerc $(TEST_SRC) $(SOURCES) src/*.h ; fi
+	if which astyle >/dev/null ; then astyle --options=./astylerc $(TEST_SRC) $(SOURCES) src/*.h ; fi
+	#if which vim >/dev/null ; then vim -c ':bufdo normal gg=G' -c ':xall' $(TEST_SRC) $(SOURCES) src/*.h ; fi
 
 .PHONY: tags
 tags:
-	if ctags --version >/dev/null ; then ctags -R; fi
+	if which ctags >/dev/null ; then ctags -R; fi
 
 BADFUNCS='[^_.>a-zA-Z0-9](str(n?cpy|n?cat|xfrm|n?dup|str|pbrk|tok|_)|stpn?cpy|a?sn?printf|byte_)'
 check:
