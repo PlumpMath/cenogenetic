@@ -125,13 +125,13 @@ template <class T, class U>  class Chromosome {
     locus_t b,e;
 	public:
 	Chromosome(const locus_t & l):b(l){ e = allele_t::extract(b); }
-	Chromosome(const genome_t& g):b(g.begin()), e(g.end()) {}
-	Chromosome& operator=(const genome_t& g) { b = g.begin(); e = g.end(); }
+	Chromosome(const genome_t& g):b(std::begin(g)), e(std::end(g)) {}
+	Chromosome& operator=(const genome_t& g) { b = std::begin(g); e = std::end(g); }
 	const locus_t& begin() const { return b; }
 	const locus_t& end() const { return e; }
 	size_t size() const { return e - b; }
 	static Chromosome random(const Chromosome &c, float functionweight){
-		return Chromosome(allele_t::random(c.begin(),c.end(),bounded_rand(10000) < functionweight * 10000));
+		return Chromosome(allele_t::random(std::begin(c),std::end(c),bounded_rand(10000) < functionweight * 10000));
 	}
 };
 
