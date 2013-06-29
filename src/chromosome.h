@@ -21,7 +21,7 @@ template <class T, class U = unsigned char> class Allele {
 	static const U TERMINAL = 1 << (std::numeric_limits<U>::digits - 1);
 	static const U FUNCTION = 0;
 	U component = ~0;
-	public:
+public:
 	static Nucleotides<T> *ntides;
 	Allele() {
 		static_assert(std::numeric_limits<U>::is_integer && !std::numeric_limits<U>::is_signed,
@@ -47,9 +47,9 @@ template <class T, class U = unsigned char> class Allele {
 					return ntides->terms[iter->index()];
 				else {
 					argstack.top().push_back(ntides->terms[iter->index()]);
-					for (auto &a : argstack.top()) {
+				for (auto & a : argstack.top()) {
 					}
-					while ( argstack.top().size() == ntides->funcs[funcstack.top().index()]->arity()) {
+					while (argstack.top().size() == ntides->funcs[funcstack.top().index()]->arity()) {
 						term_t t = ntides->funcs[funcstack.top().index()]->eval(argstack.top());
 						funcstack.pop();
 						argstack.pop();
@@ -87,13 +87,13 @@ template <class T, class U = unsigned char> class Allele {
 	}
 
 	static locus_t random(const locus_t& begin, const locus_t& end, bool wantfunc) {
-		size_t r = bounded_rand(end-begin);
-		if ((begin+r)->is_func() ==  wantfunc)
+		size_t r = bounded_rand(end - begin);
+		if ((begin + r)->is_func() ==  wantfunc)
 			return begin + r;
 		else {
 			auto iter = begin + r;
 			//every terminal has to have a preceding function, every function a following terminal
-			for (;iter->is_func() != wantfunc; iter += wantfunc ? -1 : 1) /*empty*/;
+			for (; iter->is_func() != wantfunc; iter += wantfunc ? -1 : 1) /*empty*/;
 			return iter;
 		}
 	}
@@ -102,7 +102,7 @@ template <class T, class U = unsigned char> class Allele {
 		std::stack<size_t> argstack;
 		if (l->is_term())
 			return ++l;
-		for (; true; ++l ){
+		for (; true; ++l) {
 			if (l->is_func())
 				argstack.push(l->ntides->funcs[l->index()]->arity());
 			if (l->is_term())
@@ -119,32 +119,32 @@ template <class T, class U> using Genome = std::vector<Allele<T, U>>;
 template <class T, class U> using Locus = typename Genome<T, U>::const_iterator;
 
 template <class T, class U>  class Chromosome {
-	using allele_t = Allele<T,U>;
-	using locus_t = Locus<T,U>;
-	using genome_t = Genome<T,U>;
-    locus_t b,e;
-	public:
-	Chromosome(const locus_t & l):b(l){ e = allele_t::extract(b); }
-	Chromosome(const genome_t& g):b(std::begin(g)), e(std::end(g)) {}
+	using allele_t = Allele<T, U>;
+	using locus_t = Locus<T, U>;
+	using genome_t = Genome<T, U>;
+	locus_t b, e;
+public:
+	Chromosome(const locus_t& l): b(l) { e = allele_t::extract(b); }
+	Chromosome(const genome_t& g): b(std::begin(g)), e(std::end(g)) {}
 	Chromosome& operator=(const genome_t& g) { b = std::begin(g); e = std::end(g); }
 	const locus_t& begin() const { return b; }
 	const locus_t& end() const { return e; }
 	size_t size() const { return e - b; }
-	static Chromosome random(const Chromosome &c, float functionweight){
-		return Chromosome(allele_t::random(std::begin(c),std::end(c),bounded_rand(10000) < functionweight * 10000));
+	static Chromosome random(const Chromosome& c, float functionweight) {
+		return Chromosome(allele_t::random(std::begin(c), std::end(c), bounded_rand(10000) < functionweight * 10000));
 	}
 };
 
 template <class T, class U, class Out>
-void breed(const Genome<T,U> &xx, const Genome<T,U> &xy, Out jr, Out sis, float functionweight = .8){
-	auto fromdad = Chromosome<T,U>::random(xy,functionweight);
-	auto frommom = Chromosome<T,U>::random(xx,functionweight);
-	std::copy(xy.begin(),fromdad.begin(),jr);
-	std::copy(frommom.begin(),frommom.end(),jr);
-	std::copy(fromdad.end(),xy.end(),jr);
-	std::copy(xx.begin(),frommom.begin(),sis);
-	std::copy(fromdad.begin(),fromdad.end(),sis);
-	std::copy(frommom.end(),xx.end(),sis);
+void breed(const Genome<T, U> &xx, const Genome<T, U> &xy, Out jr, Out sis, float functionweight = .8) {
+	auto fromdad = Chromosome<T, U>::random(xy, functionweight);
+	auto frommom = Chromosome<T, U>::random(xx, functionweight);
+	std::copy(xy.begin(), fromdad.begin(), jr);
+	std::copy(frommom.begin(), frommom.end(), jr);
+	std::copy(fromdad.end(), xy.end(), jr);
+	std::copy(xx.begin(), frommom.begin(), sis);
+	std::copy(fromdad.begin(), fromdad.end(), sis);
+	std::copy(frommom.end(), xx.end(), sis);
 }
 
 template <class charT, class traits, class T> inline std::basic_ostream<charT, traits>&
@@ -161,9 +161,9 @@ operator<<(std::basic_ostream<charT, traits>& s, const ceno::Allele<T>& al) {
 template <class charT, class traits, class T, class U> inline std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& s, const std::vector<ceno::Allele<T, U>>& als) {
 	std::stack<size_t> argstack;
-	std::stack<Allele<T,U>> funcstack;
+	std::stack<Allele<T, U>> funcstack;
 	bool postfix = s.flags() & std::ios_base::right;
-	for (const auto al : als) {
+for (const auto al : als) {
 		if (al.is_func()) {
 			argstack.push(al.ntides->funcs[al.index()]->arity());
 			if (!postfix && !argstack.empty()) //no args on first pass
@@ -180,7 +180,7 @@ operator<<(std::basic_ostream<charT, traits>& s, const std::vector<ceno::Allele<
 				if (postfix) {
 					s << ' ' << funcstack.top();
 					funcstack.pop();
-				}else
+				} else
 					s << ')';
 			}
 		}
